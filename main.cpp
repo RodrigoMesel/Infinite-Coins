@@ -1,58 +1,94 @@
 #include <iostream>
 #include <vector>
-#include <set>
 using namespace std;
+
+class Set{
+public:
+    vector<vector < int >> set;
+
+    bool contains(vector<int> e) {
+        /**
+         * The function bellow will
+         * - Iterate on each element on the set trying to find an equal element. Returns true if there is an equal element and false otherwise
+         */
+        for (auto it : set) {
+            if (it == e) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void add(vector <int> e) {
+        /**
+         * The function bellow will
+         * - Check if the element isnt in the set and insert in that case
+         */
+
+        if (!contains(e)) {
+            set.emplace_back(e);
+        }
+    }
+
+};
 
 class Change {
 public:
     int value;
-    vector<int> types;
-    vector<vector<vector<int>>> dynamicProgramming;
-    set < vector < int >> solution;
+    vector<int> coinsTypes;
+    Set solution;
 
-    Change(int v) : value(v) {
-        types = {1, 5, 10, 25};
-        dynamicProgramming.resize(value + 1, vector<vector<int>>());
-
-        dynamicProgramming[0].emplace_back(types.size(), 0); // Caso base de 0 moedas
+    Change(int v) {
+        value = v;
+        coinsTypes = {25, 10, 5, 1};
     }
 
-    void DynamicProgramming () {
+    void findCombinations(vector<int>& combo, int coinIndex, int remainingValue) {
+
         /**
          * The function bellow will
-         * - Do a dynamicProgramming to calculate the solution in a faster way
-         * - The first loop will iterate on each type of coin
-         * - The second loop will iterate from the value of the actual coin until the total value. J is the remaining change
-         * - The third loop will progressively build all possible combinations that add up to J, considering the addition of the current currency.
+         * - Check if the remaining change is 0, if so, it is a possible combination, so it add the combination to the solution set
+         * - Check if there is any more type of coin to be tested
+         * - If possible, use the actual coin and calculate every combination that includes the actual coin
+         * - Calculate every combination without using the actual coin
          */
 
 
-        for (int i = 0; i < types.size(); ++i) {
-            for (int j = types[i]; j <= value; ++j) {
-                for (auto &prevCombo : dynamicProgramming[j - types[i]]) {
-                    vector<int> newCombo = prevCombo;
-                    newCombo[i]++;
-                    dynamicProgramming[j].push_back(newCombo);
-                }
-            }
+        if (remainingValue == 0) {
+            solution.add(combo);
+            return;
         }
+
+        if (coinIndex >= coinsTypes.size()) {
+            return;
+        }
+
+        if (coinsTypes[coinIndex] <= remainingValue) {
+            combo[coinIndex]++;
+            findCombinations(combo, coinIndex, remainingValue - coinsTypes[coinIndex]);
+            combo[coinIndex]--;
+        }
+
+        findCombinations(combo, coinIndex + 1, remainingValue);
     }
 
-    set <vector<int>> changeMaker() {
+    Set makeChange() {
         /**
          * The function bellow will
-         * - Call the DynamicProgramming
-         * - Store the result at the set
-         * - Return the set
+         * - Create a vector to store every partial result
+         * - Call the findCombinations
+         * - Return the result
+         *
+         *
+         *
+         * It was possible to do this in a more efficient way with dynamic programming but I couldn´t
+         * do it without searching, so I prefered to do in a simple way but without searching :)
          */
-        DynamicProgramming();
 
-        for (auto &combo : dynamicProgramming[value]) {
-            solution.insert(combo);
-        }
-
+        vector<int> combo(coinsTypes.size(), 0);
+        findCombinations(combo, 0, value);
         return solution;
-
     }
 
 };
@@ -61,7 +97,7 @@ int main() {
     int value;
     cin >> value;
     Change c(value);
-    set <vector< int>> output = c.changeMaker();
+    Set output = c.makeChange();
 
     return 0;
 }
