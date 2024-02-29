@@ -59,7 +59,6 @@ public:
 
 int main() {
     int value;
-    cout << "Digite o valor para o troco: ";
     cin >> value;
     Change c(value);
     set <vector< int>> output = c.changeMaker();
